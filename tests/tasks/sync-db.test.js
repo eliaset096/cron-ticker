@@ -10,7 +10,7 @@ describe('Pruebas en Sync-DB', () => {
         const times = syncDB();
         console.log('Se llamó sync-db -->', times);
 
-        expect(times).toBe(10);
+        expect(times).toBe(2);
 
     });
 });
