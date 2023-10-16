@@ -1,18 +1,27 @@
 
-FROM --platform=$BUILDPLATFORM node:19.2-alpine3.17
-# Create app directory
+# Dependencies
+FROM node:19.2-alpine3.17 AS  deps
 WORKDIR /app
-# Copy source code to app directory
 COPY package.json ./
-# Install app dependencies
 RUN npm install 
-# Copy source code to app directory
+
+# Test
+FROM node:19.2-alpine3.17 AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . . 
-# Run testing
 RUN npm run test
-# Delete innesary files
-RUN rm -rf tests &&  rm -rf node_modules
-# Install app dependencies for production
+
+# Production dependencies
+FROM node:19.2-alpine3.17 AS prod-deps
+WORKDIR /app
+COPY package.json ./
 RUN npm install --prod
-# Command to run the app
+
+# Runner App
+FROM node:19.2-alpine3.17 AS runner
+WORKDIR /app
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY app.js ./
+COPY tasks/ ./tasks
 CMD [ "node", "app.js" ]
